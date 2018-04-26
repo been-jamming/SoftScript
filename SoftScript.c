@@ -134,6 +134,7 @@ int main(int argc, char *argv[]){
 		}
 		fread(program, sizeof(char), fsize, fp);
 		fclose(fp);
+		program[fsize] = (char) 0;
 		//printf("hi\n");
 		//printf("%s\n", program);
 		program_pointer = program;
