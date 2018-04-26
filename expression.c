@@ -27,6 +27,7 @@ expression *create_expression(){
 	output->root_node = false;
 	output->top_node = true;
 	output->begin = false;
+	output->output = create_nonetype();
 	return output;
 }
 
