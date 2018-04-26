@@ -117,13 +117,13 @@ char *parse_variable(char **c){
 		counter++;
 	}
 	
-	output = malloc(sizeof(char)*var_length);
+	output = malloc(sizeof(char)*(var_length + 1));
 	while(is_a_letter(**c) || is_a_digit(**c) || **c == '_'){
 		output[index] = **c;
 		index++;
 		(*c)++;
 	}
-	
+	output[var_length] = (char) 0;
 	return output;
 }
 
