@@ -95,7 +95,7 @@ void function_call_expression(linked_list **tokens, expression **output){
 		num_args = 0;
 	} else {
 		num_args = 1;
-		while(current_token.type != CLOSE_PARENTHESES || parentheses_count){
+		while(current_token.type != CLOSE_PARENTHESES || parentheses_count || braces_count){
 			if(current_token.type == OPEN_PARENTHESES){
 				parentheses_count++;
 			} else if(current_token.type == CLOSE_PARENTHESES){
@@ -114,6 +114,9 @@ void function_call_expression(linked_list **tokens, expression **output){
 	args = malloc(sizeof(expression *)*num_args);
 	for(i = 0; i < num_args; i++){
 		args[i] = build_expression(tokens);
+	}
+	if(num_args == 0){
+		*tokens = (*tokens)->next;
 	}
 	(*output)->args = args;
 	(*output)->num_args = num_args;
