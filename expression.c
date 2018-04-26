@@ -179,7 +179,7 @@ expression *build_expression(linked_list **tokens){
 		} else if(current_token.type == OPERATOR && output){
 			output->operators = (hollow_list *) dictionary_read(operators, (char *) current_token.value);
 			if(output->operators == (hollow_list *) 0){
-				printf("Unknown operation\n");
+				printf("Unknown operation %s\n", (char *) current_token.value);
 				exit(1);
 			}
 		} else if(current_token.type == OPEN_PARENTHESES && (output->operators || output->begin)){

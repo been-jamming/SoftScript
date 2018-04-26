@@ -154,7 +154,7 @@ char *parse_operator(char **c){
 	unsigned int operator_length;
 	counter = *c;
 	operator_length = 0;
-	while(*counter != ' ' && *counter != '	' && *counter != '(' && *counter != '"' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_'){
+	while(*counter != ' ' && *counter != '	' && *counter != '(' && *counter != '"' && *counter != '\n' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_'){
 		counter++;
 		operator_length++;
 	}
@@ -241,7 +241,7 @@ linked_list *parse_program(char **c){
 			add_linked_list(&output, create_linked_list((void *) create_token((void *) 0, SEMICOLON)));
 			(*c)++;
 			last_token_operator = true;
-		} else if(**c == ' ' || **c == '	'){
+		} else if(**c == ' ' || **c == '	' || **c == '\n' || **c == '\r'){
 			(*c)++;
 		} else {
 			string_const = parse_operator(c);

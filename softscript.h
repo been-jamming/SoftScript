@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include "hollow_lists.h"
 #include "dictionary.h"
 
@@ -108,13 +109,23 @@ dictionary *globals;
 dictionary *operators;
 hollow_list *free_datatypes;
 
+char *read_input();
+
+void discard_data(datavalue *value);
+
+void INCLUDE();
+
+datavalue *run_code(code *c);
+
 void create_variable(char *string, datavalue *value);
 
-void create_operator(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *));
+void create_operation(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *));
 
 void free_data(datavalue *value);
 
 void create_function(char *string, datavalue *(*function)(expression **, unsigned int));
+
+void create_free_func(unsigned int datatype, void (*func)(void *));
 
 expression *create_expression();
 

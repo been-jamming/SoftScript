@@ -53,7 +53,7 @@ void free_data(datavalue *value){
 	}
 	f = (free_func *) hollow_list_read(free_datatypes, value->type);
 	if(f == (free_func *) 0){
-		printf("Could not free data\n");
+		printf("Could not free data %d\n", value->type);
 		exit(1);
 	} else {
 		f->func(value->value);
@@ -73,10 +73,31 @@ void discard_data(datavalue *value){
 	}
 }
 
-char program[256];
+char *read_input(){
+   char* input = NULL;
+   char tempbuf[256];
+   size_t inputlen = 0, templen = 0;
+   do {
+       fgets(tempbuf, 256, stdin);
+       templen = strlen(tempbuf);
+       inputlen += templen;
+       input = realloc(input, inputlen+1);
+       strcat(input, tempbuf);
+    } while (templen==255 && tempbuf[254]!='\n');
+	input[inputlen-1] = (char) 0;
+    return input;
+}
 
-void main(){
+int main(int argc, char *argv[]){
+	char *program;
 	char *program_pointer;
+	char *line;
+	char *line_pointer;
+	linked_list *parsed_program;
+	expression *built_program;
+	datavalue *output;
+	FILE *fp;
+	int fsize;
 	globals = malloc(sizeof(dictionary));
 	operators = malloc(sizeof(dictionary));
 	free_datatypes = malloc(sizeof(hollow_list));
@@ -84,28 +105,42 @@ void main(){
 	*operators = dictionary_create();
 	*free_datatypes = hollow_list_create(16);
 	INCLUDE();
-	gets(program);
-	linked_list *parsed_program;
-	expression *built_program;
-	datavalue *output;
-	program_pointer = program;
-	printf("lexing...\n");
-	parsed_program = parse_program(&program_pointer);
-	printf("building...\n");
-	built_program = build_expression(&parsed_program);
-	printf("executing...\n");
-	output = evaluate_expression(built_program);
-	printf("done\n");
-	printf("result: ");
-	if(output->type == INTEGER_TYPE){
-		printf("%d\n", *((int *) output->value));
-	} else if(output->type == FLOAT_TYPE){
-		printf("%lf\n", *((double *) output->value));
-	} else if(output->type == STRING_TYPE){
-		printf("%s\n", (char *) output->value);
-	} else if(output->type == NONE_TYPE){
-		printf("NONE\n");
+	if(argc < 2){
+		while(1){
+			printf(">>>");
+			line = malloc(sizeof(char)*256);
+			fgets(line, 255, stdin);
+			line_pointer = line;
+			parsed_program = parse_program(&line_pointer);
+			built_program = build_expression(&parsed_program);
+			output = evaluate_expression(built_program);
+			if(output->type == INTEGER_TYPE){
+				printf("%d\n", *((int *) output->value));
+			} else if(output->type == FLOAT_TYPE){
+				printf("%lf\n", *((double *) output->value));
+			} else if(output->type == STRING_TYPE){
+				printf("\"%s\"\n", (char *) output->value);
+			}
+			free(line);
+		}
 	} else {
-		printf("unknown %d\n", output->type);
+		fp = fopen(argv[1], "rb");
+		fseek(fp, 0L, SEEK_END);
+		fsize = ftell(fp);
+		fseek(fp, 0L, SEEK_SET);
+		program = malloc(sizeof(char)*(fsize+1));
+		if(program == NULL){
+			return 1;
+		}
+		fread(program, sizeof(char), fsize, fp);
+		fclose(fp);
+		//printf("hi\n");
+		//printf("%s\n", program);
+		program_pointer = program;
+		parsed_program = parse_program(&program_pointer);
+		built_program = build_expression(&parsed_program);
+		evaluate_expression(built_program);
+		free(program);
 	}
+	return 0;
 }

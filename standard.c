@@ -2,6 +2,7 @@
 #include "dictionary.h"
 #include "hollow_lists.h"
 #include "standard.h"
+#include <string.h>
 
 char plus[] = "+";
 char minus[] = "-";
@@ -21,23 +22,9 @@ char ifstr[] = "if";
 char intstr[] = "int";
 char floatstr[] = "float";
 char inputstr[] = "input";
+char exitstr[] = "exit";
 
 //Internal functions
-
-char *read_input(){
-   char* input = NULL;
-   char tempbuf[256];
-   size_t inputlen = 0, templen = 0;
-   do {
-       fgets(tempbuf, 256, stdin);
-       templen = strlen(tempbuf);
-       inputlen += templen;
-       input = realloc(input, inputlen+1);
-       strcat(input, tempbuf);
-    } while (templen==255 && tempbuf[254]!='\n');
-	input[inputlen-1] = (char *) 0;
-    return input;
-}
 
 //SoftScript free functions
 
@@ -255,6 +242,8 @@ datavalue *PRINT(expression **e, unsigned int num_args){
 			printf("%d", *((int *) d->value));
 		} else if(d->type == FLOAT_TYPE){
 			printf("%lf", *((double *) d->value));
+		} else if(d->type == NONE_TYPE){
+			printf("NONE");
 		}
 		printf(" ");
 	}
@@ -400,10 +389,15 @@ datavalue *INPUT(expression **e, unsigned int num_args){
 		printf("Error: function input takes no arguments\n");
 		exit(1);
 	}
-	string = read_input();
+	string = malloc(sizeof(char)*256);
+	fgets(string, 255, stdin);
+	string[strlen(string)-1] = (char) 0;
 	output = increment_references(create_string(string));
-	free(string);
 	return output;
+}
+
+datavalue *EXIT(expression **e, unsigned int num_args){
+	exit(0);
 }
 
 void INCLUDE_STANDARD(){
@@ -437,4 +431,5 @@ void INCLUDE_STANDARD(){
 	create_function(intstr, INT);
 	create_function(floatstr, FLT);
 	create_function(inputstr, INPUT);
+	create_function(exitstr, EXIT);
 }
