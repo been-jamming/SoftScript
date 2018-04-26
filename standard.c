@@ -129,7 +129,7 @@ datavalue *GREATERTHAN_FLOAT(datavalue *a, datavalue *b, expression *expr){
 datavalue *ADD_FLOAT(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
 		return increment_references(create_float(*((double *) a->value) + *((int *) b->value)));
-	} else if(b->type = FLOAT_TYPE){
+	} else if(b->type == FLOAT_TYPE){
 		return increment_references(create_float(*((double *) a->value) + *((double *) b->value)));
 	} else {
 		return increment_references(create_float(0));
@@ -170,7 +170,7 @@ datavalue *ASSIGN(datavalue *a, datavalue *b, expression *expr){
 	datavalue **var_pointer;
 	if(expr->child2->child1){
 		if(expr->child2->child1->type != VARIABLE){
-			printf("Error: cannot assign to non-variable type %d\n");
+			printf("Error: cannot assign to non-variable type %d\n", expr->child2->child1->type);
 			exit(1);
 		} else {
 			var_pointer = expr->child2->child1->variable;
@@ -179,7 +179,7 @@ datavalue *ASSIGN(datavalue *a, datavalue *b, expression *expr){
 			(*var_pointer)->num_references++;
 		}
 	} else {
-		printf("Error: cannot assign to non-variable type %d\n");
+		printf("Error: cannot assign to non-variable type\n");
 		exit(1);
 	}
 	return increment_references(b);
@@ -288,6 +288,8 @@ datavalue *IF(expression **e, unsigned int num_args){
 		} else {
 			is_true = false;
 		}
+	} else {
+		is_true = true;
 	}
 	if(is_true){
 		run_code((code *) c_true->value);

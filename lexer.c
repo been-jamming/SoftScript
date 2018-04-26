@@ -154,7 +154,7 @@ char *parse_operator(char **c){
 	unsigned int operator_length;
 	counter = *c;
 	operator_length = 0;
-	while(*counter != ' ' && *counter != '	' && *counter != '(' && *counter != '"' && *counter != '\n' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_'){
+	while(*counter != ' ' && *counter != '	' && *counter != '(' && *counter != '"' && *counter != '\n' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_' && *counter != (char) 0){
 		counter++;
 		operator_length++;
 	}
