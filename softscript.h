@@ -75,6 +75,7 @@ struct expression{
 	expression **args;
 	expression *child1;
 	expression *child2;
+	expression *parent;
 	unsigned int num_args;
 	unsigned int type;
 	bool root_node;
@@ -108,6 +109,9 @@ struct code{
 dictionary *globals;
 dictionary *operators;
 hollow_list *free_datatypes;
+unsigned int next_datatype;
+
+unsigned int create_datatype();
 
 char *read_input();
 
@@ -128,6 +132,8 @@ void create_function(char *string, datavalue *(*function)(expression **, unsigne
 void create_free_func(unsigned int datatype, void (*func)(void *));
 
 expression *create_expression();
+
+void free_expression(expression *expr);
 
 expression *int_const_expression(token t);
 
@@ -164,6 +170,8 @@ linked_list *create_linked_list(void *value);
 linked_list *add_linked_list(linked_list **l, linked_list *element);
 
 token *create_token(void *value, unsigned int type);
+
+void free_tokens(linked_list *l);
 
 bool is_a_digit(unsigned char c);
 
