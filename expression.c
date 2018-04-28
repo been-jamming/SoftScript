@@ -19,6 +19,7 @@ expression *create_expression(){
 	output->args = (expression **) 0;
 	output->child1 = (expression *) 0;
 	output->child2 = (expression *) 0;
+	output->parent = (expression *) 0;
 	output->num_args = 0;
 	output->type = NONE;
 	output->constant = (datavalue *) 0;
@@ -31,11 +32,28 @@ expression *create_expression(){
 	return output;
 }
 
+void free_expression(expression *expr){
+	unsigned int i;
+	if(expr->child1){
+		free_expression(expr->child1);
+	}
+	if(expr->child2){
+		free_expression(expr->child2);
+	}
+	if(expr->constant){
+		discard_data(expr->constant);
+	}
+	for(i = 0; i < expr->num_args; i++){
+		free_expression(expr->args[i]);
+	}
+	free(expr);
+}
+
 expression *int_const_expression(token t){
 	expression *output;
 	output = create_expression();
 	output->type = INT_CONST;
-	output->constant = create_integer(*((int *) t.value));
+	output->constant = increment_references(create_integer(*((int *) t.value)));
 	output->root_node = true;
 	return output;
 }
@@ -44,7 +62,7 @@ expression *float_const_expression(token t){
 	expression *output;
 	output = create_expression();
 	output->type = FLOAT_CONST;
-	output->constant = create_float(*((double *) t.value));
+	output->constant = increment_references(create_float(*((double *) t.value)));
 	output->root_node = true;
 	return output;
 }
@@ -53,7 +71,7 @@ expression *string_const_expression(token t){
 	expression *output;
 	output = create_expression();
 	output->type = STRING_CONST;
-	output->constant = create_string((char *) t.value);
+	output->constant = increment_references(create_string((char *) t.value));
 	output->root_node = true;
 	return output;
 }
@@ -77,6 +95,7 @@ void add_expression(expression **output){
 	new_expression->child2 = *output;
 	new_expression->top_node = true;
 	(*output)->top_node = false;
+	(*output)->parent = new_expression;
 	*output = new_expression;
 }
 
@@ -115,6 +134,7 @@ void function_call_expression(linked_list **tokens, expression **output){
 	args = malloc(sizeof(expression *)*num_args);
 	for(i = 0; i < num_args; i++){
 		args[i] = build_expression(tokens);
+		args[i]->parent = *output;
 	}
 	if(num_args == 0){
 		*tokens = (*tokens)->next;
@@ -147,11 +167,12 @@ expression *code_const_expression(linked_list **tokens){
 		temp_tokens = temp_tokens->next;
 		current_token = *((token *) temp_tokens->value);
 	}
-	c = create_code(num_expressions);
+	c = increment_references(create_code(num_expressions));
+	output = create_expression();
 	for(i = 0; i < num_expressions; i++){
 		((code *) c->value)->expressions[i] = build_expression(tokens);
+		((code *) c->value)->expressions[i]->parent = output;
 	}
-	output = create_expression();
 	output->constant = c;
 	output->root_node = true;
 	return output;
@@ -255,7 +276,7 @@ datavalue *evaluate_expression(expression *expr){
 			expr->output = new_output;
 			return expr->output;
 		} else {
-			printf("Invalid operation\n");
+			printf("Invalid operation %d\n", child2_value->type);
 			exit(1);
 		}
 	} else if(expr->child2){
