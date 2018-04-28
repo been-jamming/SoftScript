@@ -1,21 +1,22 @@
 {
-print("enter 1st number:");
-a = (float(input()));
-print("enter 2nd number:");
-b = (float(input()));
-print("enter operation (+,-,*,/):");
-operation = (input());
-if(operation == "+", {
-	answer = (a+b);
+print("Number guessing game in SoftScript");
+print();
+print("by Ben Jones");
+rand();rand();rand();rand();
+number = (int(rand()*100));
+guess = -1;
+while(guess != number, {
+	print("Guess an integer between 0 and 100:");
+	guess = (int(input()));
+	print();
+	if(guess > number, {
+		print("Guess is too high!");
+	});
+	if(guess < number, {
+		print("Guess is too low!");
+	});
+	if(guess == number, {
+		print("You guessed the number!");
+	});
 });
-if(operation == "-", {
-	answer = (a-b);
-});
-if(operation == "*", {
-	answer = (a*b);
-});
-if(operation == "/", {
-	answer = (a/b);
-});
-print("answer:", answer);
 }()

@@ -3,6 +3,7 @@
 #include "hollow_lists.h"
 #include "standard.h"
 #include <string.h>
+#include <stdlib.h>
 
 char plus[] = "+";
 char minus[] = "-";
@@ -10,7 +11,6 @@ char multiply[] = "*";
 char divide[] = "/";
 char pi[] = "pi";
 char estr[] = "e";
-char test[] = "test";
 char print[] = "print";
 char equals[] = "=";
 char lessthan[] = "<";
@@ -28,6 +28,7 @@ char colonstr[] = ":";
 char arraystr[] = "array";
 char setarraystr[] = "set_array";
 char typestr[] = "type";
+char randstr[] = "rand";
 char nonetypestr[] = "NONE";
 char integertypestr[] = "INTEGER";
 char floattypestr[] = "FLOAT";
@@ -39,6 +40,7 @@ char pointertypestr[] = "POINTER";
 
 unsigned int ARRAY_TYPE;
 unsigned int POINTER_TYPE;
+unsigned int COMPLEX_TYPE;
 
 hollow_list *assign_operators;
 
@@ -93,16 +95,15 @@ void FREE_STRING(void *value){
 
 void FREE_FUNCTION(void *value){
 	free(value);
-	return;
 }
 
 void FREE_CODE(void *value){
 	code *c;
 	unsigned int i;
 	c = (code *) value;
-	/*for(i = 0; i < c->num_expressions; i++){
+	for(i = 0; i < c->num_expressions; i++){
 		free_expression(c->expressions[i]);
-	}*/
+	}
 	free(c);
 }
 
@@ -115,6 +116,10 @@ void FREE_ARRAY(void *value){
 	}
 	free(a->values);
 	free(a);
+}
+
+void FREE_POINTER(void *value){
+	return;
 }
 
 //SoftScript operations
@@ -531,13 +536,16 @@ datavalue *FLT(expression **e, unsigned int num_args){
 datavalue *INPUT(expression **e, unsigned int num_args){
 	datavalue *output;
 	char *string;
+	unsigned int len;
 	if(num_args > 0){
 		printf("Error: function input takes no arguments\n");
 		exit(1);
 	}
 	string = malloc(sizeof(char)*256);
 	fgets(string, 255, stdin);
+	len = strlen(string) - 1;
 	string[strlen(string)-1] = (char) 0;
+	realloc(string, len*sizeof(char));
 	output = increment_references(create_string(string));
 	return output;
 }
@@ -610,6 +618,14 @@ datavalue *TYPE(expression **e, unsigned int num_args){
 	return increment_references(create_integer(evaluate_expression(e[0])->type));
 }
 
+datavalue *RAND(expression **e, unsigned int num_args){
+	if(num_args > 0){
+		printf("Error: function rand takes no arguments\n");
+		exit(1);
+	}
+	return increment_references(create_float(((double) rand())/RAND_MAX));
+}
+
 void INCLUDE_STANDARD(){
 	ARRAY_TYPE = create_datatype();
 	POINTER_TYPE = create_datatype();
@@ -639,6 +655,7 @@ void INCLUDE_STANDARD(){
 	create_free_func(FUNCTION_TYPE, FREE_FUNCTION);
 	create_free_func(CODE_TYPE, FREE_CODE);
 	create_free_func(ARRAY_TYPE, FREE_ARRAY);
+	create_free_func(POINTER_TYPE, FREE_POINTER);
 	
 	create_variable(pi, increment_references(create_float(3.1415926535897932)));
 	create_variable(estr, increment_references(create_float(2.718281828)));
@@ -662,6 +679,7 @@ void INCLUDE_STANDARD(){
 	create_function(arraystr, ARRAY);
 	create_function(setarraystr, SET_ARRAY);
 	create_function(typestr, TYPE);
+	create_function(randstr, RAND);
 	
 	assign_operators = (hollow_list *) dictionary_read(operators, equals);
 }

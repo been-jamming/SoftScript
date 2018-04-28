@@ -154,7 +154,7 @@ char *parse_operator(char **c){
 	unsigned int operator_length;
 	counter = *c;
 	operator_length = 0;
-	while(*counter != ' ' && *counter != '	' && *counter != '(' && *counter != '"' && *counter != '\n' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_' && *counter != (char) 0){
+	while(*counter != ' ' && *counter != '	' && *counter != '{' && *counter != '(' && *counter != '"' && *counter != '\n' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_' && *counter != (char) 0){
 		counter++;
 		operator_length++;
 	}
@@ -257,26 +257,16 @@ linked_list *parse_program(char **c){
 	return original_output;
 }
 
-/*int main(){
-	char program[] = "\"hi\" 10.5 221";
-	char *pointer;
-	linked_list *output;
+void free_tokens(linked_list *l){
 	token current_token;
-	pointer = (char *) program;
-	output = parse_program(&pointer);
-	while(output != (linked_list *) 0){
-		current_token = *((token *) output->value);
-		if(current_token.type == FLOAT){
-			printf("float: %lf\n", *((double *) current_token.value));
-		} else if(current_token.type == INTEGER){
-			printf("integer: %d\n", *((int *) current_token.value));
-		} else if(current_token.type == BEGIN){
-			printf("begin\n");
-		} else if(current_token.type == STRING){
-			printf("string: \"%s\"\n", (char *) current_token.value);
-		} else {
-			printf("unknown token: %d\n", current_token.type);
+	linked_list *next;
+	while(l){
+		current_token = *((token *) l->value);
+		if(current_token.value != (void *) 0){
+			free(current_token.value);
 		}
-		output = output->next;
+		next = l->next;
+		free(l);
+		l = next;
 	}
-}*/
+}

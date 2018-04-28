@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "dictionary.h"
 #include "hollow_lists.h"
 #include "softscript.h"
@@ -106,6 +107,7 @@ int main(int argc, char *argv[]){
 	datavalue *output;
 	FILE *fp;
 	int fsize;
+	srand(time(NULL));
 	next_datatype = 6;
 	globals = malloc(sizeof(dictionary));
 	operators = malloc(sizeof(dictionary));
