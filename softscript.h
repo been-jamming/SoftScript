@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <setjmp.h>
 #include "hollow_lists.h"
 #include "dictionary.h"
 
@@ -21,6 +22,7 @@
 #define BEGIN 10
 #define OPEN_BRACES 11
 #define CLOSE_BRACES 12
+#define NEW_LINE 13
 
 #define NONE 0
 #define CODE 1
@@ -39,6 +41,9 @@
 #define FUNCTION_TYPE 4
 #define CODE_TYPE 5
 
+#define BINARY 0
+#define UNARY 1
+
 typedef struct {
 	void *value;
 	unsigned int type;
@@ -51,7 +56,7 @@ typedef struct {
 } varspace;
 
 typedef struct {
-	void (*func)(void *);
+	void (*function)(void *);
 } free_func;
 
 typedef struct linked_list linked_list;
@@ -69,7 +74,14 @@ struct token{
 	unsigned int type;
 };
 
+typedef struct operation operation;
+
 typedef struct expression expression;
+
+struct operation{
+	datavalue *(*function)(datavalue *, datavalue *, expression *);
+	unsigned int type;
+};
 
 struct expression{
 	expression **args;
@@ -78,19 +90,14 @@ struct expression{
 	expression *parent;
 	unsigned int num_args;
 	unsigned int type;
+	unsigned int line_num;
 	bool root_node;
 	bool top_node;
 	datavalue *constant;
 	datavalue **variable;
-	hollow_list *operators;
+	operation **operators;
 	datavalue *output;
 	bool begin;
-};
-
-typedef struct operation operation;
-
-struct operation{
-	datavalue *(*func)(datavalue *, datavalue *, expression *);
 };
 
 typedef struct function_value function_value;
@@ -108,8 +115,18 @@ struct code{
 
 dictionary *globals;
 dictionary *operators;
-hollow_list *free_datatypes;
+free_func **free_datatypes;
 unsigned int next_datatype;
+unsigned int current_line;
+jmp_buf env;
+char *file_name;
+expression *current_expression;
+
+void quit();
+
+void error(char *error_string);
+
+void warning(char *warning_string);
 
 unsigned int create_datatype();
 
@@ -117,13 +134,15 @@ char *read_input();
 
 void discard_data(datavalue *value);
 
+void INCLUDE_DATATYPES();
+
 void INCLUDE();
 
 datavalue *run_code(code *c);
 
 void create_variable(char *string, datavalue *value);
 
-void create_operation(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *));
+void create_operation(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *), unsigned int type);
 
 void free_data(datavalue *value);
 

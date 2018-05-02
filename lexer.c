@@ -154,9 +154,12 @@ char *parse_operator(char **c){
 	unsigned int operator_length;
 	counter = *c;
 	operator_length = 0;
-	while(*counter != ' ' && *counter != '	' && *counter != '{' && *counter != '(' && *counter != '"' && *counter != '\n' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_' && *counter != (char) 0){
+	while(*counter != ' ' && *counter != '	' && *counter != '{' && *counter != '(' && *counter != '"' && *counter != '}' && *counter != ')' && *counter != '\n' && !is_a_digit(*counter) && !is_a_letter(*counter) && *counter != '_' && *counter != (char) 0){
 		counter++;
 		operator_length++;
+		if(*counter == '[' || *counter == ']' || *(counter - 1) == '[' || *(counter - 1) == ']'){
+			break;
+		}
 	}
 	output = malloc(sizeof(char)*(operator_length + 1));
 	memcpy(output, *c, operator_length*sizeof(char));
@@ -224,7 +227,7 @@ linked_list *parse_program(char **c){
 		} else if(**c == ')'){
 			add_linked_list(&output, create_linked_list((void *) create_token((void *) 0, CLOSE_PARENTHESES)));
 			(*c)++;
-			last_token_operator = true;
+			last_token_operator = false;
 		} else if(**c == '{'){
 			add_linked_list(&output, create_linked_list((void *) create_token((void *) 0, OPEN_BRACES)));
 			(*c)++;
@@ -232,7 +235,7 @@ linked_list *parse_program(char **c){
 		} else if(**c == '}'){
 			add_linked_list(&output, create_linked_list((void *) create_token((void *) 0, CLOSE_BRACES)));
 			(*c)++;
-			last_token_operator = true;
+			last_token_operator = false;
 		} else if(**c == ','){
 			add_linked_list(&output, create_linked_list((void *) create_token((void *) 0, COMMA)));
 			(*c)++;
@@ -241,7 +244,10 @@ linked_list *parse_program(char **c){
 			add_linked_list(&output, create_linked_list((void *) create_token((void *) 0, SEMICOLON)));
 			(*c)++;
 			last_token_operator = true;
-		} else if(**c == ' ' || **c == '	' || **c == '\n' || **c == '\r'){
+		} else if(**c == '\n'){
+			add_linked_list(&output, create_linked_list((void *) create_token((void *) 0, NEW_LINE)));
+			(*c)++;
+		} else if(**c == ' ' || **c == '	' || **c == '\r'){
 			(*c)++;
 		} else {
 			string_const = parse_operator(c);

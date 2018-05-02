@@ -12,12 +12,31 @@ by Ben Jones
 #include <stdio.h>
 #include "dictionary.h"
 
+void (*global_free_func)(void *);
+
 dictionary dictionary_create(){
 	dictionary output;
 	output.child = malloc(sizeof(hollow_list));
 	*output.child = hollow_list_create(8);
 	output.value = (void *) 0;
 	return output;
+}
+
+void _dictionary_free(void *value){
+	if(value){
+		dictionary_free((dictionary *) value, global_free_func);
+	}
+}
+
+void dictionary_free(dictionary *dict, void (*free_func)(void *)){
+	global_free_func = free_func;
+	if(!dict){
+		return;
+	}
+	hollow_list_free(dict->child, _dictionary_free);
+	if(dict->value){
+		free_func(dict->value);
+	}
 }
 
 void dictionary_write(dictionary *dict, char *index, void *value){

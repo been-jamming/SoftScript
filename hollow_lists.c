@@ -21,11 +21,16 @@ hollow_list hollow_list_create(unsigned int size){
 //Frees all memory of associated with a hollow list and its children
 void hollow_list_free(hollow_list *l, void (*free_values)(void *)){
 	int i;
-	for(i = 0; i < l->size; i++){
-		hollow_list_free(l->children + i, free_values);
+	if(!l){
+		return;
 	}
-	(*free_values)(l->value);
-	free(l);
+	if(l->children){
+		for(i = 0; i < l->size; i++){
+			hollow_list_free(l->children + i, free_values);
+		}
+	}
+	free_values(l->value);
+	free(l->children);
 }
 
 //Reads from the hollow list and returns a pointer to the item's data

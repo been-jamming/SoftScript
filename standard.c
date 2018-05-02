@@ -24,7 +24,8 @@ char intstr[] = "int";
 char floatstr[] = "float";
 char inputstr[] = "input";
 char exitstr[] = "exit";
-char colonstr[] = ":";
+char openbracketstr[] = "[";
+char closebracketstr[] = "]";
 char arraystr[] = "array";
 char setarraystr[] = "set_array";
 char typestr[] = "type";
@@ -42,7 +43,7 @@ unsigned int ARRAY_TYPE;
 unsigned int POINTER_TYPE;
 unsigned int COMPLEX_TYPE;
 
-hollow_list *assign_operators;
+operation **assign_operators;
 
 //Internal structures
 
@@ -253,8 +254,7 @@ datavalue *ASSIGN(datavalue *a, datavalue *b, expression *expr){
 		increment_references(b);
 	} else if(expr->child2->child1){
 		if(expr->child2->child1->type != VARIABLE){
-			printf("Error: cannot assign to non-variable type %d\n", expr->child2->child1->type);
-			exit(1);
+			error("Error: cannot assign to non-variable type");
 		} else {
 			var_pointer = expr->child2->child1->variable;
 			discard_data(*var_pointer);
@@ -262,8 +262,7 @@ datavalue *ASSIGN(datavalue *a, datavalue *b, expression *expr){
 			increment_references(b);
 		}
 	} else {
-		printf("Error: cannot assign to non-variable type\n");
-		exit(1);
+		error("Error: cannot assign to non-variable type");
 	}
 	return increment_references(b);
 }
@@ -313,16 +312,26 @@ datavalue *NOTEQUALS(datavalue *a, datavalue *b, expression *expr){
 }
 
 datavalue *INDEX_ARRAY(datavalue *a, datavalue *b, expression *expr){
+	int index;
 	if(b->type != INTEGER_TYPE){
-		printf("Error: array indices must be integers\n");
-		exit(1);
+		error("Error: array indices must be integers");
+	}
+	index = *((int *) b->value);
+	if(index >= ((array *) a->value)->length || index < 0){
+		error("Error: array index out of range");
 	}
 	if(expr->parent){
-		if(expr->parent->operators == assign_operators){
-			return increment_references(create_pointer(((array *) a->value)->values + *((int *) b->value)));
+		if(expr->parent->parent){
+			if(expr->parent->parent->operators == assign_operators){
+				return increment_references(create_pointer(((array *) a->value)->values + *((int *) b->value)));
+			}
 		}
 	}
 	return increment_references(((array *) a->value)->values[*((int *) b->value)]);
+}
+
+datavalue *NO_OPERATION(datavalue *a, datavalue *b, expression *expr){
+	return increment_references(a);
 }
 
 //SoftScript functions
@@ -356,8 +365,7 @@ datavalue *IF(expression **e, unsigned int num_args){
 	datavalue *c_false;
 	bool is_true;
 	if(num_args != 2 && num_args != 3){
-		printf("Error: function if takes two or three arguments\n");
-		exit(1);
+		error("Error: function if takes two or three arguments");
 	}
 	
 	condition = e[0];
@@ -370,13 +378,11 @@ datavalue *IF(expression **e, unsigned int num_args){
 	if(num_args == 3){
 		c_false = evaluate_expression(false_code);
 		if(c_true->type != CODE_TYPE || c_false->type != CODE_TYPE){
-			printf("Error: function if takes a code object for arguments 2 and 3");
-			exit(1);
+			error("Error: function if takes a code object for arguments 2 and 3");
 		}
 	} else {
 		if(c_true->type != CODE_TYPE){
-			printf("Error: function if takes a code object for arguments 2 and 3");
-			exit(1);
+			error("Error: function if takes a code object for arguments 2 and 3");
 		}
 	}
 	condition_value = evaluate_expression(condition);
@@ -405,15 +411,13 @@ datavalue *WHILE(expression **e, unsigned int num_args){
 	code *cc;
 	bool do_loop;
 	if(num_args != 2){
-		printf("Error: function while takes exactly two arguments\n");
-		exit(1);
+		error("Error: function while takes exactly two arguments");
 	}
 	condition = e[0];
 	loop = e[1];
 	c = evaluate_expression(loop);
 	if(c->type != CODE_TYPE){
-		printf("Error: function while takes a code object for argument number 2\n");
-		exit(1);
+		error("Error: function while takes a code object for argument number 2");
 	}
 	cc = (code *) c->value;
 	condition_value = evaluate_expression(condition);
@@ -452,8 +456,7 @@ datavalue *FOR(expression **e, unsigned int num_args){
 	code *c;
 	bool do_loop;
 	if(num_args != 4){
-		printf("Error: function for takes exactly 4 arguments\n");
-		exit(1);
+		error("Error: function for takes exactly 4 arguments");
 	}
 	initialize = e[0];
 	condition = e[1];
@@ -461,8 +464,7 @@ datavalue *FOR(expression **e, unsigned int num_args){
 	execute = e[3];
 	execute_d = evaluate_expression(execute);
 	if(execute_d->type != CODE_TYPE){
-		printf("Error: function for takes a code object as the 4th argument\n");
-		exit(1);
+		error("Error: function for takes a code object as the 4th argument");
 	}
 	c = (code *) execute_d->value;
 	evaluate_expression(initialize);
@@ -497,8 +499,7 @@ datavalue *INT(expression **e, unsigned int num_args){
 	datavalue *v;
 	char **c;
 	if(num_args != 1){
-		printf("Error: function int takes exactly 1 argument\n");
-		exit(1);
+		error("Error: function int takes exactly 1 argument");
 	}
 	v = evaluate_expression(e[0]);
 	if(v->type == INTEGER_TYPE){
@@ -517,8 +518,7 @@ datavalue *FLT(expression **e, unsigned int num_args){
 	datavalue *v;
 	char **c;
 	if(num_args != 1){
-		printf("Error: function float takes exactly 1 argument\n");
-		exit(1);
+		error("Error: function float takes exactly 1 argument");
 	}
 	v = evaluate_expression(e[0]);
 	if(v->type == INTEGER_TYPE){
@@ -538,8 +538,7 @@ datavalue *INPUT(expression **e, unsigned int num_args){
 	char *string;
 	unsigned int len;
 	if(num_args > 0){
-		printf("Error: function input takes no arguments\n");
-		exit(1);
+		error("Error: function input takes no arguments");
 	}
 	string = malloc(sizeof(char)*256);
 	fgets(string, 255, stdin);
@@ -551,7 +550,7 @@ datavalue *INPUT(expression **e, unsigned int num_args){
 }
 
 datavalue *EXIT(expression **e, unsigned int num_args){
-	exit(0);
+	quit();
 }
 
 datavalue *ARRAY(expression **e, unsigned int num_args){
@@ -564,15 +563,14 @@ datavalue *ARRAY(expression **e, unsigned int num_args){
 	}
 	d = evaluate_expression(e[0]);
 	if(d->type != INTEGER_TYPE){
-		printf("Error: function array takes only integer arguments\n");
-		exit(1);
+		error("Error: function array takes only integer arguments");
 	}
 	length = *((int *) d->value);
 	output = create_array(length);
 	for(i = 0; i < length; i++){
 		((array *) output->value)->values[i] = ARRAY(e + 1, num_args - 1);
 	}
-	return output;
+	return increment_references(output);
 }
 
 datavalue *SET_ARRAY(expression **e, unsigned int num_args){
@@ -584,21 +582,18 @@ datavalue *SET_ARRAY(expression **e, unsigned int num_args){
 	unsigned int arg_index;
 	unsigned int index;
 	if(num_args < 2){
-		printf("Error: function set_array takes at least 2 arguments\n");
-		exit(1);
+		error("Error: function set_array takes at least 2 arguments");
 	}
 	array_pointer = evaluate_expression(e[0]);
 	if(array_pointer->type != ARRAY_TYPE){
-		printf("Error: function set_array takes an array as the 1st argument\n");
-		exit(1);
+		error("Error: function set_array takes an array as the 1st argument");
 	}
 	a = (array *) array_pointer->value;
 	index = *((int *) evaluate_expression(e[1])->value);
 	array_data = a->values + index;
 	for(arg_index = 2; arg_index < num_args - 1; arg_index++){
 		if((*array_data)->type != ARRAY_TYPE){
-			printf("Error: invalid array dimensions\n");
-			exit(1);
+			error("Error: invalid array dimensions");
 		}
 		index = *((int *) evaluate_expression(e[arg_index])->value);
 		array_data = ((array *) (*array_data)->value)->values + index;
@@ -612,41 +607,42 @@ datavalue *SET_ARRAY(expression **e, unsigned int num_args){
 
 datavalue *TYPE(expression **e, unsigned int num_args){
 	if(num_args != 1){
-		printf("Error: function type takes exactly 1 argument\n");
-		exit(1);
+		error("Error: function type takes exactly 1 argument");
 	}
 	return increment_references(create_integer(evaluate_expression(e[0])->type));
 }
 
 datavalue *RAND(expression **e, unsigned int num_args){
 	if(num_args > 0){
-		printf("Error: function rand takes no arguments\n");
-		exit(1);
+		error("Error: function rand takes no arguments");
 	}
 	return increment_references(create_float(((double) rand())/RAND_MAX));
 }
 
-void INCLUDE_STANDARD(){
+void STANDARD_DATATYPES(){
 	ARRAY_TYPE = create_datatype();
 	POINTER_TYPE = create_datatype();
+}
+
+void INCLUDE_STANDARD(){
+	create_operation(INTEGER_TYPE, plus, ADD_INTEGER, BINARY);
+	create_operation(INTEGER_TYPE, minus, SUBTRACT_INTEGER, BINARY);
+	create_operation(INTEGER_TYPE, multiply, MULTIPLY_INTEGER, BINARY);
+	create_operation(INTEGER_TYPE, divide, DIVIDE_INTEGER, BINARY);
+	create_operation(FLOAT_TYPE, plus, ADD_FLOAT, BINARY);
+	create_operation(FLOAT_TYPE, minus, SUBTRACT_FLOAT, BINARY);
+	create_operation(FLOAT_TYPE, multiply, MULTIPLY_FLOAT, BINARY);
+	create_operation(FLOAT_TYPE, divide, DIVIDE_FLOAT, BINARY);
+	create_operation(INTEGER_TYPE, lessthan, LESSTHAN_INTEGER, BINARY);
+	create_operation(INTEGER_TYPE, greaterthan, GREATERTHAN_INTEGER, BINARY);
+	create_operation(FLOAT_TYPE, lessthan, LESSTHAN_FLOAT, BINARY);
+	create_operation(FLOAT_TYPE, greaterthan, GREATERTHAN_FLOAT, BINARY);
+	create_operation(ARRAY_TYPE, openbracketstr, INDEX_ARRAY, BINARY);
 	
-	create_operation(INTEGER_TYPE, plus, ADD_INTEGER);
-	create_operation(INTEGER_TYPE, minus, SUBTRACT_INTEGER);
-	create_operation(INTEGER_TYPE, multiply, MULTIPLY_INTEGER);
-	create_operation(INTEGER_TYPE, divide, DIVIDE_INTEGER);
-	create_operation(FLOAT_TYPE, plus, ADD_FLOAT);
-	create_operation(FLOAT_TYPE, minus, SUBTRACT_FLOAT);
-	create_operation(FLOAT_TYPE, multiply, MULTIPLY_FLOAT);
-	create_operation(FLOAT_TYPE, divide, DIVIDE_FLOAT);
-	create_operation(INTEGER_TYPE, lessthan, LESSTHAN_INTEGER);
-	create_operation(INTEGER_TYPE, greaterthan, GREATERTHAN_INTEGER);
-	create_operation(FLOAT_TYPE, lessthan, LESSTHAN_FLOAT);
-	create_operation(FLOAT_TYPE, greaterthan, GREATERTHAN_FLOAT);
-	create_operation(ARRAY_TYPE, colonstr, INDEX_ARRAY);
-	
-	create_operation(NONE_TYPE, equalsvalue, EQUALS);
-	create_operation(NONE_TYPE, notequalsvalue, NOTEQUALS);
-	create_operation(NONE_TYPE, equals, ASSIGN);
+	create_operation(NONE_TYPE, equalsvalue, EQUALS, BINARY);
+	create_operation(NONE_TYPE, notequalsvalue, NOTEQUALS, BINARY);
+	create_operation(NONE_TYPE, equals, ASSIGN, BINARY);
+	create_operation(NONE_TYPE, closebracketstr, NO_OPERATION, UNARY);
 	
 	create_free_func(NONE_TYPE, FREE_NONE);
 	create_free_func(INTEGER_TYPE, FREE_INTEGER);
@@ -681,5 +677,5 @@ void INCLUDE_STANDARD(){
 	create_function(typestr, TYPE);
 	create_function(randstr, RAND);
 	
-	assign_operators = (hollow_list *) dictionary_read(operators, equals);
+	assign_operators = (operation **) dictionary_read(operators, equals);
 }

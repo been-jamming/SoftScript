@@ -24,11 +24,12 @@ expression *create_expression(){
 	output->type = NONE;
 	output->constant = (datavalue *) 0;
 	output->variable = (datavalue **) 0;
-	output->operators = (hollow_list *) 0;
+	output->operators = (operation **) 0;
 	output->root_node = false;
 	output->top_node = true;
 	output->begin = false;
-	output->output = create_nonetype();
+	output->output = increment_references(create_nonetype());
+	output->line_num = 0;
 	return output;
 }
 
@@ -42,6 +43,9 @@ void free_expression(expression *expr){
 	}
 	if(expr->constant){
 		discard_data(expr->constant);
+	}
+	if(expr->output){
+		discard_data(expr->output);
 	}
 	for(i = 0; i < expr->num_args; i++){
 		free_expression(expr->args[i]);
@@ -184,6 +188,8 @@ expression *build_expression(linked_list **tokens){
 	current_token.type = NONE;
 	output = create_expression();
 	output->begin = true;
+	output->line_num = current_line;
+	current_expression = output;
 	while(*tokens != (linked_list *) 0 && current_token.type != CLOSE_PARENTHESES && current_token.type != COMMA && current_token.type != CLOSE_BRACES && current_token.type != SEMICOLON){
 		current_token = *((token *) (*tokens)->value);
 		if(current_token.type == INTEGER){
@@ -199,10 +205,12 @@ expression *build_expression(linked_list **tokens){
 			output->child1 = variable_expression(current_token);
 			add_expression(&output);
 		} else if(current_token.type == OPERATOR && output){
-			output->operators = (hollow_list *) dictionary_read(operators, (char *) current_token.value);
-			if(output->operators == (hollow_list *) 0){
-				printf("Unknown operation %s\n", (char *) current_token.value);
-				exit(1);
+			if(output->operators){
+				add_expression(&output);
+			}
+			output->operators = (operation **) dictionary_read(operators, (char *) current_token.value);
+			if(output->operators == (operation **) 0){
+				error("Error: Unknown operation");
 			}
 		} else if(current_token.type == OPEN_PARENTHESES && (output->operators || output->begin)){
 			*tokens = (*tokens)->next;
@@ -215,6 +223,8 @@ expression *build_expression(linked_list **tokens){
 			*tokens = (*tokens)->next;
 			output->child1 = code_const_expression(tokens);
 			add_expression(&output);
+		} else if(current_token.type == NEW_LINE){
+			current_line++;
 		}
 		if(*tokens != (linked_list *) 0 && current_token.type != OPEN_PARENTHESES && current_token.type != CLOSE_BRACES){
 			*tokens = (*tokens)->next;
@@ -238,6 +248,7 @@ datavalue *evaluate_expression(expression *expr){
 	function_value *f;
 	operation *oper;
 	datavalue *new_output;
+	current_expression = expr;
 	if(expr->begin && expr->child1){
 		expr = expr->child1;
 	}
@@ -261,23 +272,28 @@ datavalue *evaluate_expression(expression *expr){
 			expr->output = new_output;
 			return expr->output;
 		} else {
-			printf("Cannot call non-function type\n");
-			exit(1);
+			error("Error: Cannot call non-function type");
 		}
 	} else if(expr->operators){
 		child2_value = evaluate_expression(expr->child2);
-		oper = (operation *) hollow_list_read(expr->operators, child2_value->type);
+		oper = expr->operators[child2_value->type];
 		if(oper == (operation *) 0){
-			oper = (operation *) hollow_list_read(expr->operators, NONE_TYPE);
+			oper = expr->operators[NONE_TYPE];
 		}
 		if(oper != (operation *) 0){
-			new_output = oper->func(child2_value, evaluate_expression(expr->child1), expr);
-			discard_data(expr->output);
-			expr->output = new_output;
-			return expr->output;
+			if(oper->type == BINARY){
+				new_output = oper->function(child2_value, evaluate_expression(expr->child1), expr);
+				discard_data(expr->output);
+				expr->output = new_output;
+				return expr->output;
+			} else if(oper->type == UNARY){
+				new_output = oper->function(child2_value, (datavalue *) 0, expr);
+				discard_data(expr->output);
+				expr->output = new_output;
+				return expr->output;
+			}
 		} else {
-			printf("Invalid operation %d\n", child2_value->type);
-			exit(1);
+			error("Error: Invalid operation on datatype");
 		}
 	} else if(expr->child2){
 		return evaluate_expression(expr->child2);

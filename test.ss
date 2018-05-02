@@ -1,7 +1,6 @@
 {
 print("Number guessing game in SoftScript");
 print();
-print("by Ben Jones");
 number = (int(rand()*100));
 guess = -1;
 while(guess != number, {
