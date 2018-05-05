@@ -323,11 +323,11 @@ datavalue *INDEX_ARRAY(datavalue *a, datavalue *b, expression *expr){
 	if(expr->parent){
 		if(expr->parent->parent){
 			if(expr->parent->parent->operators == assign_operators){
-				return increment_references(create_pointer(((array *) a->value)->values + *((int *) b->value)));
+				return increment_references(create_pointer(((array *) a->value)->values + index));
 			}
 		}
 	}
-	return increment_references(((array *) a->value)->values[*((int *) b->value)]);
+	return increment_references(((array *) a->value)->values[index]);
 }
 
 datavalue *NO_OPERATION(datavalue *a, datavalue *b, expression *expr){
