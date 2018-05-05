@@ -83,11 +83,11 @@ void FREE_NONE(void *value){
 }
 
 void FREE_INTEGER(void *value){
-	free(value);
+	return;
 }
 
 void FREE_FLOAT(void *value){
-	free(value);
+	return;
 }
 
 void FREE_STRING(void *value){
@@ -127,9 +127,9 @@ void FREE_POINTER(void *value){
 
 datavalue *ADD_INTEGER(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer(*((int *) a->value) + *((int *) b->value)));
+		return increment_references(create_integer(a->int_value + b->int_value));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float(*((int *) a->value) + *((double *) b->value)));
+		return increment_references(create_float(a->int_value + b->float_value));
 	} else {
 		return increment_references(create_nonetype());
 	}
@@ -137,9 +137,9 @@ datavalue *ADD_INTEGER(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *SUBTRACT_INTEGER(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer(*((int *) a->value) - *((int *) b->value)));
+		return increment_references(create_integer(a->int_value - b->int_value));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float(*((int *) a->value) - *((double *) b->value)));
+		return increment_references(create_float(a->int_value - b->float_value));
 	} else {
 		return increment_references(create_integer(0));
 	}
@@ -147,9 +147,9 @@ datavalue *SUBTRACT_INTEGER(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *MULTIPLY_INTEGER(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer(*((int *) a->value)*(*((int *) b->value))));
+		return increment_references(create_integer(a->int_value*(b->int_value)));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float(*((int *) a->value)*(*((double *) b->value))));
+		return increment_references(create_float(a->int_value*(b->float_value)));
 	} else {
 		return increment_references(create_integer(1));
 	}
@@ -157,9 +157,9 @@ datavalue *MULTIPLY_INTEGER(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *DIVIDE_INTEGER(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer(*((int *) a->value)/(*((int *) b->value))));
+		return increment_references(create_integer(a->int_value/b->int_value));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float(*((int *) a->value)/(*((double *) b->value))));
+		return increment_references(create_float(a->int_value/b->float_value));
 	} else {
 		return increment_references(create_integer(1));
 	}
@@ -167,9 +167,9 @@ datavalue *DIVIDE_INTEGER(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *LESSTHAN_INTEGER(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) < *((int *) b->value))));
+		return increment_references(create_integer((int) (a->int_value < b->int_value)));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) < *((double *) b->value))));
+		return increment_references(create_integer((int) (a->float_value < b->float_value)));
 	} else {
 		return increment_references(create_integer(0));
 	}
@@ -177,9 +177,9 @@ datavalue *LESSTHAN_INTEGER(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *GREATERTHAN_INTEGER(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) > *((int *) b->value))));
+		return increment_references(create_integer((int) (a->int_value > b->int_value)));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) > *((double *) b->value))));
+		return increment_references(create_integer((int) (a->int_value > b->float_value)));
 	} else {
 		return increment_references(create_integer(0));
 	}
@@ -187,9 +187,9 @@ datavalue *GREATERTHAN_INTEGER(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *LESSTHAN_FLOAT(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) < *((int *) b->value))));
+		return increment_references(create_integer((int) (a->float_value < b->int_value)));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) < *((double *) b->value))));
+		return increment_references(create_integer((int) (a->float_value < b->float_value)));
 	} else {
 		return increment_references(create_integer(0));
 	}
@@ -197,9 +197,9 @@ datavalue *LESSTHAN_FLOAT(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *GREATERTHAN_FLOAT(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) > *((int *) b->value))));
+		return increment_references(create_integer((int) (a->float_value > b->int_value)));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) > *((double *) b->value))));
+		return increment_references(create_integer((int) (a->float_value > b->float_value)));
 	} else {
 		return increment_references(create_integer(0));
 	}
@@ -207,9 +207,9 @@ datavalue *GREATERTHAN_FLOAT(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *ADD_FLOAT(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_float(*((double *) a->value) + *((int *) b->value)));
+		return increment_references(create_float(a->float_value + b->int_value));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float(*((double *) a->value) + *((double *) b->value)));
+		return increment_references(create_float(a->float_value + b->float_value));
 	} else {
 		return increment_references(create_float(0));
 	}
@@ -217,9 +217,9 @@ datavalue *ADD_FLOAT(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *SUBTRACT_FLOAT(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_float(*((double *) a->value) - *((int *) b->value)));
+		return increment_references(create_float(a->float_value - b->int_value));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float(*((double *) a->value) - *((double *) b->value)));
+		return increment_references(create_float(a->float_value - b->float_value));
 	} else {
 		return increment_references(create_float(0));
 	}
@@ -227,9 +227,9 @@ datavalue *SUBTRACT_FLOAT(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *MULTIPLY_FLOAT(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_float(*((double *) a->value)*(*((int *) b->value))));
+		return increment_references(create_float(a->float_value*(b->int_value)));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float(*((double *) a->value)*(*((double *) b->value))));
+		return increment_references(create_float(a->float_value*(b->float_value)));
 	} else {
 		return increment_references(create_integer(1));
 	}
@@ -237,9 +237,9 @@ datavalue *MULTIPLY_FLOAT(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *DIVIDE_FLOAT(datavalue *a, datavalue *b, expression *expr){
 	if(b->type == INTEGER_TYPE){
-		return increment_references(create_float((*((double *) a->value))/(*((int *) b->value))));
+		return increment_references(create_float(a->float_value/b->int_value));
 	} else if(b->type == FLOAT_TYPE){
-		return increment_references(create_float((*((double *) a->value))/(*((double *) b->value))));
+		return increment_references(create_float(a->float_value/b->float_value));
 	} else {
 		return increment_references(create_integer(1));
 	}
@@ -269,13 +269,13 @@ datavalue *ASSIGN(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *EQUALS(datavalue *a, datavalue *b, expression *expr){
 	if(a->type == INTEGER_TYPE && b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) == *((int *) b->value))));
+		return increment_references(create_integer((int) (a->int_value == b->int_value)));
 	} else if(a->type == INTEGER_TYPE && b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) == *((double *) b->value))));
+		return increment_references(create_integer((int) (a->int_value == b->float_value)));
 	} else if(a->type == FLOAT_TYPE && b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) == *((int *) b->value))));
+		return increment_references(create_integer((int) (a->float_value == b->int_value)));
 	} else if(a->type == FLOAT_TYPE && b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) == *((double *) b->value))));
+		return increment_references(create_integer((int) (a->float_value == b->float_value)));
 	} else if(a->type != b->type){
 		return increment_references(create_integer(0));
 	} else if(a->type == STRING_TYPE && b->type == STRING_TYPE){
@@ -291,13 +291,13 @@ datavalue *EQUALS(datavalue *a, datavalue *b, expression *expr){
 
 datavalue *NOTEQUALS(datavalue *a, datavalue *b, expression *expr){
 	if(a->type == INTEGER_TYPE && b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) != *((int *) b->value))));
+		return increment_references(create_integer((int) (a->int_value != b->int_value)));
 	} else if(a->type == INTEGER_TYPE && b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((int *) a->value) != *((double *) b->value))));
+		return increment_references(create_integer((int) (a->int_value != b->float_value)));
 	} else if(a->type == FLOAT_TYPE && b->type == INTEGER_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) != *((int *) b->value))));
+		return increment_references(create_integer((int) (a->float_value != b->int_value)));
 	} else if(a->type == FLOAT_TYPE && b->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) (*((double *) a->value) != *((double *) b->value))));
+		return increment_references(create_integer((int) (a->float_value != b->float_value)));
 	} else if(a->type != b->type){
 		return increment_references(create_integer(1));
 	} else if(a->type == STRING_TYPE && b->type == STRING_TYPE){
@@ -316,7 +316,7 @@ datavalue *INDEX_ARRAY(datavalue *a, datavalue *b, expression *expr){
 	if(b->type != INTEGER_TYPE){
 		error("Error: array indices must be integers");
 	}
-	index = *((int *) b->value);
+	index = b->int_value;
 	if(index >= ((array *) a->value)->length || index < 0){
 		error("Error: array index out of range");
 	}
@@ -344,9 +344,9 @@ datavalue *PRINT(expression **e, unsigned int num_args){
 		if(d->type == STRING_TYPE){
 			printf("%s", (char *) d->value);
 		} else if(d->type == INTEGER_TYPE){
-			printf("%d", *((int *) d->value));
+			printf("%d", d->int_value);
 		} else if(d->type == FLOAT_TYPE){
-			printf("%lf", *((double *) d->value));
+			printf("%lf", d->float_value);
 		} else if(d->type == NONE_TYPE){
 			printf("NONE");
 		}
@@ -387,7 +387,7 @@ datavalue *IF(expression **e, unsigned int num_args){
 	}
 	condition_value = evaluate_expression(condition);
 	if(condition_value->type == INTEGER_TYPE){
-		if(*((int *) condition_value->value)){
+		if(condition_value->int_value){
 			is_true = true;
 		} else {
 			is_true = false;
@@ -422,7 +422,7 @@ datavalue *WHILE(expression **e, unsigned int num_args){
 	cc = (code *) c->value;
 	condition_value = evaluate_expression(condition);
 	if(condition_value->type == INTEGER_TYPE){
-		if(*((int *) condition_value->value)){
+		if(condition_value->int_value){
 			do_loop = true;
 		} else {
 			do_loop = false;
@@ -434,7 +434,7 @@ datavalue *WHILE(expression **e, unsigned int num_args){
 		run_code(cc);
 		condition_value = evaluate_expression(condition);
 		if(condition_value->type == INTEGER_TYPE){
-			if(*((int *) condition_value->value) == 0){
+			if(condition_value->int_value == 0){
 				do_loop = false;
 			} else {
 				do_loop = true;
@@ -470,7 +470,7 @@ datavalue *FOR(expression **e, unsigned int num_args){
 	evaluate_expression(initialize);
 	condition_d = evaluate_expression(condition);
 	if(condition_d->type == INTEGER_TYPE){
-		if(*((int *) condition_d->value)){
+		if(condition_d->int_value){
 			do_loop = true;
 		} else {
 			do_loop = false;
@@ -483,7 +483,7 @@ datavalue *FOR(expression **e, unsigned int num_args){
 		evaluate_expression(after);
 		condition_d = evaluate_expression(condition);
 		if(condition_d->type == INTEGER_TYPE){
-			if(*((int *) condition_d->value)){
+			if(condition_d->int_value){
 				do_loop = true;
 			} else {
 				do_loop = false;
@@ -498,6 +498,10 @@ datavalue *FOR(expression **e, unsigned int num_args){
 datavalue *INT(expression **e, unsigned int num_args){
 	datavalue *v;
 	char **c;
+	char *cc;
+	char *original_cc;
+	unsigned int len;
+	datavalue *output;
 	if(num_args != 1){
 		error("Error: function int takes exactly 1 argument");
 	}
@@ -505,10 +509,16 @@ datavalue *INT(expression **e, unsigned int num_args){
 	if(v->type == INTEGER_TYPE){
 		return increment_references(v);
 	} else if(v->type == FLOAT_TYPE){
-		return increment_references(create_integer((int) *((double *) v->value)));
+		return increment_references(create_integer((int) (v->float_value)));
 	} else if(v->type == STRING_TYPE){
-		c = (char **) &(v->value);
-		return increment_references(create_integer(parse_integer(c)));
+		len = strlen((char *) v->value);
+		cc = calloc(len + 1, sizeof(char));
+		c = &cc;
+		original_cc = cc;
+		strcpy(cc, (char *) v->value);
+		output = increment_references(create_integer(parse_integer(c)));
+		free(original_cc);
+		return output;
 	} else {
 		return increment_references(create_nonetype());
 	}
@@ -517,17 +527,26 @@ datavalue *INT(expression **e, unsigned int num_args){
 datavalue *FLT(expression **e, unsigned int num_args){
 	datavalue *v;
 	char **c;
+	char *cc;
+	char *original_cc;
+	unsigned int len;
+	datavalue *output;
 	if(num_args != 1){
 		error("Error: function float takes exactly 1 argument");
 	}
 	v = evaluate_expression(e[0]);
 	if(v->type == INTEGER_TYPE){
-		return increment_references(create_float((double) *((int *) v->value)));
+		return increment_references(create_float((double) (v->int_value)));
 	} else if(v->type == FLOAT_TYPE){
 		return increment_references(v);
 	} else if(v->type == STRING_TYPE){
-		c = (char **) &(v->value);
-		return increment_references(create_float(parse_float(c)));
+		len = strlen((char *) v->value);
+		cc = calloc(len + 1, sizeof(char));
+		c = &cc;
+		original_cc = cc;
+		output = increment_references(create_float(parse_float(c)));
+		free(original_cc);
+		return output;
 	} else {
 		return increment_references(create_nonetype());
 	}
@@ -565,44 +584,12 @@ datavalue *ARRAY(expression **e, unsigned int num_args){
 	if(d->type != INTEGER_TYPE){
 		error("Error: function array takes only integer arguments");
 	}
-	length = *((int *) d->value);
+	length = d->int_value;
 	output = create_array(length);
 	for(i = 0; i < length; i++){
 		((array *) output->value)->values[i] = ARRAY(e + 1, num_args - 1);
 	}
 	return increment_references(output);
-}
-
-datavalue *SET_ARRAY(expression **e, unsigned int num_args){
-	datavalue *output;
-	datavalue **array_data;
-	datavalue *array_pointer;
-	datavalue *set_value;
-	array *a;
-	unsigned int arg_index;
-	unsigned int index;
-	if(num_args < 2){
-		error("Error: function set_array takes at least 2 arguments");
-	}
-	array_pointer = evaluate_expression(e[0]);
-	if(array_pointer->type != ARRAY_TYPE){
-		error("Error: function set_array takes an array as the 1st argument");
-	}
-	a = (array *) array_pointer->value;
-	index = *((int *) evaluate_expression(e[1])->value);
-	array_data = a->values + index;
-	for(arg_index = 2; arg_index < num_args - 1; arg_index++){
-		if((*array_data)->type != ARRAY_TYPE){
-			error("Error: invalid array dimensions");
-		}
-		index = *((int *) evaluate_expression(e[arg_index])->value);
-		array_data = ((array *) (*array_data)->value)->values + index;
-	}
-	set_value = evaluate_expression(e[arg_index]);
-	discard_data(*array_data);
-	*array_data = set_value;
-	increment_references(*array_data);
-	return increment_references(create_nonetype());
 }
 
 datavalue *TYPE(expression **e, unsigned int num_args){
@@ -625,24 +612,24 @@ void STANDARD_DATATYPES(){
 }
 
 void INCLUDE_STANDARD(){
-	create_operation(INTEGER_TYPE, plus, ADD_INTEGER, BINARY);
-	create_operation(INTEGER_TYPE, minus, SUBTRACT_INTEGER, BINARY);
-	create_operation(INTEGER_TYPE, multiply, MULTIPLY_INTEGER, BINARY);
-	create_operation(INTEGER_TYPE, divide, DIVIDE_INTEGER, BINARY);
-	create_operation(FLOAT_TYPE, plus, ADD_FLOAT, BINARY);
-	create_operation(FLOAT_TYPE, minus, SUBTRACT_FLOAT, BINARY);
-	create_operation(FLOAT_TYPE, multiply, MULTIPLY_FLOAT, BINARY);
-	create_operation(FLOAT_TYPE, divide, DIVIDE_FLOAT, BINARY);
-	create_operation(INTEGER_TYPE, lessthan, LESSTHAN_INTEGER, BINARY);
-	create_operation(INTEGER_TYPE, greaterthan, GREATERTHAN_INTEGER, BINARY);
-	create_operation(FLOAT_TYPE, lessthan, LESSTHAN_FLOAT, BINARY);
-	create_operation(FLOAT_TYPE, greaterthan, GREATERTHAN_FLOAT, BINARY);
-	create_operation(ARRAY_TYPE, openbracketstr, INDEX_ARRAY, BINARY);
+	create_operation(INTEGER_TYPE, plus, ADD_INTEGER, BINARY, true);
+	create_operation(INTEGER_TYPE, minus, SUBTRACT_INTEGER, BINARY, true);
+	create_operation(INTEGER_TYPE, multiply, MULTIPLY_INTEGER, BINARY, true);
+	create_operation(INTEGER_TYPE, divide, DIVIDE_INTEGER, BINARY, true);
+	create_operation(FLOAT_TYPE, plus, ADD_FLOAT, BINARY, true);
+	create_operation(FLOAT_TYPE, minus, SUBTRACT_FLOAT, BINARY, true);
+	create_operation(FLOAT_TYPE, multiply, MULTIPLY_FLOAT, BINARY, true);
+	create_operation(FLOAT_TYPE, divide, DIVIDE_FLOAT, BINARY, true);
+	create_operation(INTEGER_TYPE, lessthan, LESSTHAN_INTEGER, BINARY, true);
+	create_operation(INTEGER_TYPE, greaterthan, GREATERTHAN_INTEGER, BINARY, true);
+	create_operation(FLOAT_TYPE, lessthan, LESSTHAN_FLOAT, BINARY, true);
+	create_operation(FLOAT_TYPE, greaterthan, GREATERTHAN_FLOAT, BINARY, true);
+	create_operation(ARRAY_TYPE, openbracketstr, INDEX_ARRAY, BINARY, false);
 	
-	create_operation(NONE_TYPE, equalsvalue, EQUALS, BINARY);
-	create_operation(NONE_TYPE, notequalsvalue, NOTEQUALS, BINARY);
-	create_operation(NONE_TYPE, equals, ASSIGN, BINARY);
-	create_operation(NONE_TYPE, closebracketstr, NO_OPERATION, UNARY);
+	create_operation(NONE_TYPE, equalsvalue, EQUALS, BINARY, true);
+	create_operation(NONE_TYPE, notequalsvalue, NOTEQUALS, BINARY, true);
+	create_operation(NONE_TYPE, equals, ASSIGN, BINARY, false);
+	create_operation(NONE_TYPE, closebracketstr, NO_OPERATION, UNARY, true);
 	
 	create_free_func(NONE_TYPE, FREE_NONE);
 	create_free_func(INTEGER_TYPE, FREE_INTEGER);
@@ -673,7 +660,6 @@ void INCLUDE_STANDARD(){
 	create_function(inputstr, INPUT);
 	create_function(exitstr, EXIT);
 	create_function(arraystr, ARRAY);
-	create_function(setarraystr, SET_ARRAY);
 	create_function(typestr, TYPE);
 	create_function(randstr, RAND);
 	

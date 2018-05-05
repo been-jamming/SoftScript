@@ -3,6 +3,7 @@
 #include <time.h>
 #include <setjmp.h>
 #include <string.h>
+#include <stdbool.h>
 #include "dictionary.h"
 #include "hollow_lists.h"
 #include "softscript.h"
@@ -68,13 +69,14 @@ void create_function(char *string, datavalue *(*function)(expression **, unsigne
 	dictionary_write(globals, string, new_pointer);
 }
 
-void create_operation(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *), unsigned int type){
+void create_operation(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *), unsigned int type, bool optimize){
 	operation *oper;
 	operation **operation_list;
 	char *buffer;
 	oper = malloc(sizeof(operation));
 	oper->function = function;
 	oper->type = type;
+	oper->optimize = optimize;
 	operation_list = (operation **) dictionary_read(operators, string);
 	if(operation_list == (operation **) 0){
 		operation_list = calloc(next_datatype, sizeof(operation));
@@ -144,7 +146,6 @@ void error(char *error_string){
 	} else {
 		printf("---\nLine %d in %s\n%s\n---\n", 0, file_name, error_string);
 	}
-	quit();
 	longjmp(env, 1);
 }
 
@@ -250,9 +251,9 @@ int main(int argc, char *argv[]){
 			built_program = build_expression(&parsed_program_copy);
 			output = evaluate_expression(built_program);
 			if(output->type == INTEGER_TYPE){
-				printf("%d\n", *((int *) output->value));
+				printf("%d\n", output->int_value);
 			} else if(output->type == FLOAT_TYPE){
-				printf("%lf\n", *((double *) output->value));
+				printf("%lf\n", output->float_value);
 			} else if(output->type == STRING_TYPE){
 				printf("\"%s\"\n", (char *) output->value);
 			}
@@ -263,7 +264,7 @@ int main(int argc, char *argv[]){
 		}
 	} else {
 		if(setjmp(env)){
-			exit(1);
+			quit();
 		}
 		file_name = argv[1];
 		current_line = 1;

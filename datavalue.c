@@ -37,8 +37,7 @@ datavalue *create_nonetype(){
 datavalue *create_integer(int value){
 	datavalue *output;
 	output = create_datavalue();
-	output->value = malloc(sizeof(int));
-	*((int *) output->value) = value;
+	output->int_value = value;
 	output->type = INTEGER_TYPE;
 	return output;
 }
@@ -46,8 +45,7 @@ datavalue *create_integer(int value){
 datavalue *create_float(double value){
 	datavalue *output;
 	output = create_datavalue();
-	output->value = malloc(sizeof(double));
-	*((double *) output->value) = value;
+	output->float_value = value;
 	output->type = FLOAT_TYPE;
 	return output;
 }

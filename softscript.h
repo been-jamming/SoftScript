@@ -45,7 +45,11 @@
 #define UNARY 1
 
 typedef struct {
-	void *value;
+	union {
+		void *value;
+		int int_value;
+		double float_value;
+	};
 	unsigned int type;
 	int num_references;
 } datavalue;
@@ -81,12 +85,15 @@ typedef struct expression expression;
 struct operation{
 	datavalue *(*function)(datavalue *, datavalue *, expression *);
 	unsigned int type;
+	bool optimize;
 };
 
 struct expression{
-	expression **args;
+	expression ** args;
 	expression *child1;
 	expression *child2;
+	datavalue *last_child1_value;
+	datavalue *last_child2_value;
 	expression *parent;
 	unsigned int num_args;
 	unsigned int type;
@@ -95,7 +102,7 @@ struct expression{
 	bool top_node;
 	datavalue *constant;
 	datavalue **variable;
-	operation **operators;
+	operation ** operators;
 	datavalue *output;
 	bool begin;
 };
@@ -142,7 +149,7 @@ datavalue *run_code(code *c);
 
 void create_variable(char *string, datavalue *value);
 
-void create_operation(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *), unsigned int type);
+void create_operation(unsigned int datatype, char *string, datavalue *(*function)(datavalue *, datavalue *, expression *), unsigned int type, bool optimize);
 
 void free_data(datavalue *value);
 

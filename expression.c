@@ -19,6 +19,8 @@ expression *create_expression(){
 	output->args = (expression **) 0;
 	output->child1 = (expression *) 0;
 	output->child2 = (expression *) 0;
+	output->last_child1_value = (datavalue *) 0;
+	output->last_child2_value = (datavalue *) 0;
 	output->parent = (expression *) 0;
 	output->num_args = 0;
 	output->type = NONE;
@@ -270,6 +272,7 @@ datavalue *evaluate_expression(expression *expr){
 			new_output = run_code((code *) child2_value->value);
 			discard_data(expr->output);
 			expr->output = new_output;
+			increment_references(expr->output);
 			return expr->output;
 		} else {
 			error("Error: Cannot call non-function type");
@@ -282,15 +285,27 @@ datavalue *evaluate_expression(expression *expr){
 		}
 		if(oper != (operation *) 0){
 			if(oper->type == BINARY){
-				new_output = oper->function(child2_value, evaluate_expression(expr->child1), expr);
-				discard_data(expr->output);
-				expr->output = new_output;
-				return expr->output;
+				child1_value = evaluate_expression(expr->child1);
+				if(expr->last_child1_value && expr->last_child2_value && oper->optimize && child1_value == expr->last_child1_value && child2_value == expr->last_child2_value){
+					return expr->output;
+				} else {
+					new_output = oper->function(child2_value, child1_value, expr);
+					discard_data(expr->output);
+					expr->output = new_output;
+					expr->last_child1_value = child1_value;
+					expr->last_child2_value = child2_value;
+					return expr->output;
+				}
 			} else if(oper->type == UNARY){
-				new_output = oper->function(child2_value, (datavalue *) 0, expr);
-				discard_data(expr->output);
-				expr->output = new_output;
-				return expr->output;
+				if(expr->last_child2_value && oper->optimize && child2_value == expr->last_child2_value){
+					return expr->output;
+				} else {
+					new_output = oper->function(child2_value, (datavalue *) 0, expr);
+					discard_data(expr->output);
+					expr->output = new_output;
+					expr->last_child2_value = child2_value;
+					return expr->output;
+				}
 			}
 		} else {
 			error("Error: Invalid operation on datatype");
