@@ -334,6 +334,12 @@ datavalue *NO_OPERATION(datavalue *a, datavalue *b, expression *expr){
 	return increment_references(a);
 }
 
+datavalue *OR(datavalue *a, datavalue *b, expression *expr){
+	if(b->type != INTEGER){
+		error("Error: second argument to || must be an integer");
+	}
+}
+
 //SoftScript functions
 
 datavalue *PRINT(expression **e, unsigned int num_args){
@@ -560,7 +566,7 @@ datavalue *INPUT(expression **e, unsigned int num_args){
 		error("Error: function input takes no arguments");
 	}
 	string = malloc(sizeof(char)*256);
-	fgets(string, 255, stdin);
+	getsn(string, 255);
 	len = strlen(string) - 1;
 	string[strlen(string)-1] = (char) 0;
 	realloc(string, len*sizeof(char));
