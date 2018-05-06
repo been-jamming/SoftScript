@@ -7,6 +7,10 @@ To compile:
 
 To run the example program:
 
-`softscript test.ss`
+`./softscript test.ss`
+
+To run the CLI:
+
+`./softscript`
 
 <a href = "https://github.com/computergeek314/SoftScript/wiki">Documentation</a> is provided in this repository's wiki.
