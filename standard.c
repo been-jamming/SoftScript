@@ -17,6 +17,8 @@ char lessthan[] = "<";
 char greaterthan[] = ">";
 char equalsvalue[] = "==";
 char notequalsvalue[] = "!=";
+char andstr[] = "&&";
+char orstr[] = "||";
 char whilestr[] = "while";
 char ifstr[] = "if";
 char forstr[] = "for";
@@ -335,9 +337,17 @@ datavalue *NO_OPERATION(datavalue *a, datavalue *b, expression *expr){
 }
 
 datavalue *OR(datavalue *a, datavalue *b, expression *expr){
-	if(b->type != INTEGER){
-		error("Error: second argument to || must be an integer");
+	if(b->type != INTEGER_TYPE){
+		error("Error: || expects integer as the second argument");
 	}
+	return increment_references(create_integer((int) (a->int_value || b->int_value)));
+}
+
+datavalue *AND(datavalue *a, datavalue *b, expression *expr){
+	if(b->type != INTEGER_TYPE){
+		error("Error: && expects integer as the second argument");
+	}
+	return increment_references(create_integer((int) (a->int_value && b->int_value)));
 }
 
 //SoftScript functions
@@ -566,7 +576,7 @@ datavalue *INPUT(expression **e, unsigned int num_args){
 		error("Error: function input takes no arguments");
 	}
 	string = malloc(sizeof(char)*256);
-	getsn(string, 255);
+	fgets(string, 255, stdin);
 	len = strlen(string) - 1;
 	string[strlen(string)-1] = (char) 0;
 	realloc(string, len*sizeof(char));
@@ -631,6 +641,8 @@ void INCLUDE_STANDARD(){
 	create_operation(FLOAT_TYPE, lessthan, LESSTHAN_FLOAT, BINARY, true);
 	create_operation(FLOAT_TYPE, greaterthan, GREATERTHAN_FLOAT, BINARY, true);
 	create_operation(ARRAY_TYPE, openbracketstr, INDEX_ARRAY, BINARY, false);
+	create_operation(INTEGER_TYPE, orstr, OR, BINARY, true);
+	create_operation(INTEGER_TYPE, andstr, AND, BINARY, true);
 	
 	create_operation(NONE_TYPE, equalsvalue, EQUALS, BINARY, true);
 	create_operation(NONE_TYPE, notequalsvalue, NOTEQUALS, BINARY, true);
